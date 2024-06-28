@@ -1,4 +1,3 @@
-import CodeHost from "@/components/code-host";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { twMerge } from "tailwind-merge";
@@ -20,24 +19,12 @@ export default function Home() {
         </Link>
         <div className="flex gap-4 flex-wrap py-6">
           <Link
-            href="#host"
+            href={"/generate"}
             className={twMerge(buttonVariants(), "w-full sm:w-48")}
           >
-            Host it yourself
-          </Link>
-          <Link
-            href={"/tryit"}
-            className={twMerge(buttonVariants(), "w-full sm:w-48")}
-          >
-            Try it out
+            Generate
           </Link>
         </div>
-      </section>
-      <section
-        id="host"
-        className="text-center py-20 sm:py-32 max-w-3xl flex flex-col gap-3 items-center"
-      >
-        <CodeHost />
       </section>
     </div>
   );

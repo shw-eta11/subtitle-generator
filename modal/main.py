@@ -1,7 +1,7 @@
 import os
 import base64
 import json
-
+import logging
 from modal import (
     Image,
     Stub,
@@ -13,16 +13,21 @@ from modal import (
     Function,
     functions
 )
-from fastapi import  FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import tempfile
 import time
+from config import MAX_AUDIO_SIZE
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 sdxl_image = (
     Image.debian_slim(python_version="3.10")
     .apt_install("git", "ffmpeg")
-    .pip_install("packaging")  # Install packaging first
+    .pip_install("packaging")  
     .pip_install(
         "transformers",
         "ninja",
@@ -67,7 +72,7 @@ class Model:
             torch_dtype=self.torch_dtype,
             use_safetensors=True,
             low_cpu_mem_usage=True,
-            use_flash_attention_2=False,  # Disable flash attention
+            use_flash_attention_2=False,  
         )
         processor = AutoProcessor.from_pretrained(MODEL_DIR)
 
@@ -99,14 +104,14 @@ class Model:
         )
         elapsed = time.time() - start
 
-        os.unlink(fp_name)  # Clean up the temporary file
+        os.unlink(fp_name)  
         return output, elapsed
 
     @method()
     def inference(self, audio: bytes):
+
         output, elapsed = self._inference(audio)
         
-        # Create a JSON-friendly version of the output
         json_output = {
             "text": output["text"],
             "chunks": [
@@ -123,27 +128,27 @@ class Model:
             "json_output": json_output,
             "elapsed_time": elapsed
         }
+    
 @web_app.post("/transcribe")
 async def transcribe(request: Request):
-    data = await request.json()
-    audio_base64 = data['audio']
-    filename = data['filename']
-    print(filename)
-    # Decode base64 audio
-    audio_bytes = base64.b64decode(audio_base64)
-    
-    # Save to temporary file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(filename)[1]) as fp:
-        fp.write(audio_bytes)
-        fp_name = fp.name
-    
-    f = Function.lookup("transcript_generator", "Model.inference")
-    call = f.spawn(audio_bytes)
-    
-    # Clean up temporary file
-    os.unlink(fp_name)
-    
-    return {"call_id": call.object_id}
+    try:
+        data = await request.json()
+        audio_base64 = data['audio']
+        filename = data['filename']
+        
+        # Input validation
+        if len(audio_base64) > MAX_AUDIO_SIZE:
+            raise HTTPException(status_code=400, detail="Audio file too large")
+        
+        audio_bytes = base64.b64decode(audio_base64)
+        
+        f = Function.lookup("transcript_generator", "Model.inference")
+        call = f.spawn(audio_bytes)
+        
+        return {"call_id": call.object_id}
+    except Exception as e:
+        logger.error(f"Error during transcription request: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @web_app.get("/stats")
 def stats():
@@ -160,6 +165,7 @@ async def get_completion(request: Request):
         return JSONResponse(content=result)
     except TimeoutError:
         return JSONResponse(content="Processing", status_code=202)
+
 
 @stub.function(allow_concurrent_inputs=4)
 @asgi_app()

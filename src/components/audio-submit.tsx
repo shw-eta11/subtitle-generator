@@ -27,18 +27,18 @@ export default function AudioSubmit({ setFile, file }: Props) {
     const reader = new FileReader();
     reader.onload = async (event: any) => {
       if (event.target && event.target.result) {
-        const base64Audio = event.target.result.split(',')[1];
-        console.log(base64Audio,file.name)
+        const base64Audio = event.target.result.split(",")[1];
+        console.log(base64Audio, file.name);
         const promise = () =>
           axios.post(
             `https://rohit4242-transcripter--transcript-generator-entrypoint.modal.run/transcribe`,
             { audio: base64Audio, filename: file.name },
-            { headers: { 'Content-Type': 'application/json' } }
+            { headers: { "Content-Type": "application/json" } }
           );
 
         toast.promise(promise, {
           loading: "Sending your file to the server",
-          success: (response:any) => {
+          success: (response: any) => {
             setOpen(true);
             setCall_id(response.data.call_id);
             return "Received call id: " + response.data.call_id;
@@ -55,7 +55,7 @@ export default function AudioSubmit({ setFile, file }: Props) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Successfully Sent File!</DialogTitle>
+            <DialogTitle>🎉 Successfully Sent File 🎉</DialogTitle>
             <DialogDescription>
               The transcription will be available at this link. You can go there
               right now or check back later.
@@ -64,10 +64,7 @@ export default function AudioSubmit({ setFile, file }: Props) {
           <ShareUrl host={window.location.href} call_id={call_id} />
           <DialogFooter className="sm:justify-start">
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link
-                href={`/tryit/${call_id}`}
-                className={buttonVariants()}
-              >
+              <Link href={`/generate/${call_id}`} className={buttonVariants()}>
                 Go to the Link
               </Link>
               <Button
@@ -88,7 +85,8 @@ export default function AudioSubmit({ setFile, file }: Props) {
       </Dialog>
 
       <Button
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           setSubmitted(true);
           submitAudio();
         }}

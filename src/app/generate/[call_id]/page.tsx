@@ -5,7 +5,6 @@ import ReqProgress from "./reqProgress";
 import ReqFail from "./reqFail";
 import Loading from "./loading";
 import DataViewer from "@/components/data-viewer";
-import ShareUrl from "@/components/share-url";
 
 export default function Page({ params }: { params: { call_id: string } }) {
   const [data, setData] = useState<any | undefined>();
@@ -15,7 +14,7 @@ export default function Page({ params }: { params: { call_id: string } }) {
     let timeoutId: NodeJS.Timeout;
     const formData = new FormData();
     formData.append("call_id", params.call_id);
-    console.log(params.call_id)
+    console.log(params.call_id);
     const fetchData = async () => {
       fetch(
         `https://rohit4242-transcripter--transcript-generator-entrypoint.modal.run/call_id`,
@@ -62,7 +61,6 @@ export default function Page({ params }: { params: { call_id: string } }) {
       <>
         <div className="container flex flex-col items-center gap-4 max-w-3xl">
           <DataViewer data={data} />
-         
         </div>
       </>
     );

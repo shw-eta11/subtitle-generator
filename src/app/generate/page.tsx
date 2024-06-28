@@ -14,6 +14,16 @@ export default function TryIt() {
       fileInputRef.current.value = "";
     }
   }, [file]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFile(e.target.files?.[0]);
+  };
+
+  const handleUploadClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="container flex w-full flex-col items-center gap-12">
       <section className="text-center py-28 max-w-3xl flex flex-col gap-3 items-center w-full">
@@ -21,33 +31,38 @@ export default function TryIt() {
           Upload an mp3 file
         </div>
 
-        <div
-          onClick={() => fileInputRef.current?.click()}
-          className="cursor-pointer justify-center"
-        >
+        <div className="w-full">
           {file && (
-            <div className="flex flex-col items-center w-full gap-2">
+            <div
+              className="flex flex-col items-center w-full gap-2"
+              onClick={(e) => e.stopPropagation()}
+            >
               <h1 className="pt-12 font-semibold w-full">
                 <Waveform file={file} />
               </h1>
               <AudioSubmit file={file} setFile={setFile} />
             </div>
           )}
-          {!file ? (
-            <div className="my-5 flex gap-2 items-center px-2.5 py-1.5 rounded-lg border border-dashed border-gray-300 text-gray-600 bg-gray-100 bg-opacity-40">
-              <Upload size={20} /> Select a File
-            </div>
-          ) : (
-            <div className="my-5 flex gap-2 items-center px-2.5 py-1.5 rounded-lg border border-dashed border-gray-300 text-gray-600 bg-gray-100 bg-opacity-40">
-              <File size={20} /> Change File
-            </div>
-          )}
+          <div
+            onClick={handleUploadClick}
+            className="my-5 flex gap-2 items-center px-2.5 py-1.5 rounded-lg border border-dashed border-gray-300 text-gray-600 bg-gray-100 bg-opacity-40 cursor-pointer justify-center"
+          >
+            {!file ? (
+              <>
+                <Upload size={20} /> Select a File
+              </>
+            ) : (
+              <>
+                <File size={20} /> Change File
+              </>
+            )}
+          </div>
           <input
             ref={fileInputRef}
             type="file"
             accept=".mp3"
             style={{ display: "none" }}
-            onChange={(e) => setFile(e.target.files?.[0])}
+            onChange={handleFileChange}
           />
         </div>
       </section>

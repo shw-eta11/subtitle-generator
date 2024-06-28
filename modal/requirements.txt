@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+modal
+torch
+transformers
+ninja
+wheel
+hf-transfer~=0.1
+ffmpeg-python
+accelerate
+pytest
