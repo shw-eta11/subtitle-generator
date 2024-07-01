@@ -28,7 +28,7 @@ export default function AudioSubmit({ setFile, file }: Props) {
     reader.onload = async (event: any) => {
       if (event.target && event.target.result) {
         const base64Audio = event.target.result.split(",")[1];
-        console.log(base64Audio, file.name);
+
         const promise = () =>
           axios.post(
             `https://rohit4242-transcripter--transcript-generator-entrypoint.modal.run/transcribe`,

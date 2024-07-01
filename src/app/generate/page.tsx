@@ -4,10 +4,14 @@ import AudioSubmit from "@/components/audio-submit";
 import Waveform from "@/components/waveform";
 import { File, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile, toBlobURL } from "@ffmpeg/util";
 
 export default function TryIt() {
   const [file, setFile] = useState<File | undefined>();
+  const [audioFile, setAudioFile] = useState<File | undefined>();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [ffmpeg, setFFmpeg] = useState<FFmpeg | null>(null);
 
   useEffect(() => {
     if (fileInputRef.current) {
@@ -15,20 +19,86 @@ export default function TryIt() {
     }
   }, [file]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFile(e.target.files?.[0]);
+  useEffect(() => {
+    const loadFFmpeg = async () => {
+      const ffmpegInstance = new FFmpeg();
+      const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd";
+      await ffmpegInstance.load({
+        coreURL: await toBlobURL(
+          `${baseURL}/ffmpeg-core.js`,
+          "text/javascript"
+        ),
+        wasmURL: await toBlobURL(
+          `${baseURL}/ffmpeg-core.wasm`,
+          "application/wasm"
+        ),
+      });
+      setFFmpeg(ffmpegInstance);
+    };
+    loadFFmpeg();
+  }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      if (selectedFile.type.startsWith("video/")) {
+        const extractedAudio = await extractAudio(selectedFile);
+        setAudioFile(extractedAudio);
+      } else if (selectedFile.type.startsWith("audio/")) {
+        setAudioFile(selectedFile);
+      }
+    }
   };
 
   const handleUploadClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     fileInputRef.current?.click();
   };
+  const createFile = (
+    bits: BlobPart[],
+    name: string,
+    options?: FilePropertyBag
+  ): File => {
+    return new window.File(bits, name, options);
+  };
+  const extractAudio = async (video: File): Promise<File | undefined> => {
+    if (!ffmpeg) {
+      console.error("FFmpeg is not loaded yet");
+      return;
+    }
+
+    try {
+      const inputExtension =
+        video.name.split(".").pop()?.toLowerCase() || "mp4";
+      const inputFileName = `input.${inputExtension}`;
+
+      await ffmpeg.writeFile(inputFileName, await fetchFile(video));
+      await ffmpeg.exec([
+        "-i",
+        inputFileName,
+        "-vn",
+        "-acodec",
+        "libmp3lame",
+        "output.mp3",
+      ]);
+      const data = await ffmpeg.readFile("output.mp3");
+      const audioBlob = new Blob([data], { type: "audio/mp3" });
+      const audioFile = createFile([audioBlob], "extracted_audio.mp3", {
+        type: "audio/mp3",
+      });
+
+      return audioFile;
+    } catch (error) {
+      console.error("Error extracting audio:", error);
+    }
+  };
 
   return (
     <div className="container flex w-full flex-col items-center gap-12">
       <section className="text-center py-28 max-w-3xl flex flex-col gap-3 items-center w-full">
         <div className="text-5xl tracking-tighter font-semibold">
-          Upload an mp3 file
+          Upload an audio or video file
         </div>
 
         <div className="w-full">
@@ -40,7 +110,7 @@ export default function TryIt() {
               <h1 className="pt-12 font-semibold w-full">
                 <Waveform file={file} />
               </h1>
-              <AudioSubmit file={file} setFile={setFile} />
+              {audioFile && <AudioSubmit file={audioFile} setFile={setFile} />}
             </div>
           )}
           <div
@@ -60,7 +130,7 @@ export default function TryIt() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".mp3"
+            accept="audio/*,video/*,video/x-matroska,.mkv"
             style={{ display: "none" }}
             onChange={handleFileChange}
           />

@@ -9,12 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.10",
+    "@ffmpeg/util": "^0.12.1",
     "@radix-ui/react-dialog": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
     "axios": "^1.7.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "ffmpeg": "^0.0.4",
+    "ffmpeg-extract-audio": "^1.0.2",
+    "fluent-ffmpeg": "^2.1.3",
     "lucide-react": "^0.395.0",
     "next": "14.2.4",
     "next-themes": "^0.3.0",
@@ -27,6 +32,8 @@
     "wavesurfer.js": "^7.7.15"
   },
   "devDependencies": {
+    "@types/ffmpeg": "^1.0.7",
+    "@types/fluent-ffmpeg": "^2.1.24",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

@@ -7,7 +7,7 @@ export default function Home() {
     <div className="container flex w-full flex-col items-center gap-12">
       <section className="text-center py-28 max-w-3xl flex flex-col gap-3 items-center">
         <h1 className="pt-24 text-5xl sm:text-6xl tracking-tighter font-semibold">
-          Transcribe audio in minutes with WhisperV3
+          Transcribe audio or video in minutes with WhisperV3
         </h1>
         <Link
           target="_"
