@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')  // Jenkins credential ID
+        IMAGE_NAME = 'shw-eta11/subtitle-generator'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Cloning GitHub repository...'
+                git branch: 'main', url: 'https://github.com/shw-eta11/subtitle-generator.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing Node.js dependencies...'
+                sh 'npm install'
+            }
+        }
+
+        stage('Build Next.js App') {
+            steps {
+                echo 'Building Next.js application...'
+                sh 'npm run build'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                echo 'Building Docker image...'
+                sh 'docker build -t ${IMAGE_NAME}:latest .'
+            }
+        }
+
+        stage('Docker Login & Push') {
+            steps {
+                echo 'Logging in and pushing image to Docker Hub...'
+                sh '''
+                    echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                    docker push ${IMAGE_NAME}:latest
+                '''
+            }
+        }
+
+        stage('Clean Up') {
+            steps {
+                echo 'Cleaning up local Docker images...'
+                sh 'docker rmi ${IMAGE_NAME}:latest || true'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build and Docker push completed successfully!'
+        }
+        failure {
+            echo '❌ Build failed. Check Jenkins logs for details.'
+        }
+    }
+}
