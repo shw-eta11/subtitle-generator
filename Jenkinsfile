@@ -2,10 +2,8 @@ pipeline {
     agent any
 
     environment {
-    DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-    IMAGE_NAME = "shweta0/subtitle-generator"
-}
-
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+        IMAGE_NAME = "shweta0/subtitle-generator"
     }
 
     stages {
@@ -37,19 +35,21 @@ pipeline {
             }
         }
 
-        stage("Image Push"){
-            steps{
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'shweta0', passwordVariable: 'Tmro@164289')]) {
-                   sh "docker tag static ${env.docker_user}/static:${BUILD_NUMBER}"
-                   sh "docker login -u ${env.docker_user} -p ${env.docker_pass}"
-                   sh "docker push ${env.docker_user}/static:${BUILD_NUMBER}"  
+        stage('Push to DockerHub') {
+            steps {
+                echo '📤 Pushing image to Docker Hub...'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${IMAGE_NAME}:latest
+                    '''
                 }
             }
         }
 
         stage('Deploy Locally') {
             steps {
-                echo '🚀 Deploying container on the same EC2 (Jenkins host)...'
+                echo '🚀 Deploying container on Jenkins EC2...'
                 sh '''
                     docker stop subtitle-generator || true
                     docker rm subtitle-generator || true
