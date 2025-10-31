@@ -49,11 +49,9 @@ pipeline {
             steps {
                 echo '🚀 Deploying container on Jenkins EC2...'
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'docker_user', passwordVariable: 'docker_pass')]) {
-                    sh '''
-                        docker login -u ${env.docker_user} -p ${env.docker_pass}
-                        docker pull ${env.docker_user}/${IMAGE_NAME}:${BUILD_NUMBER}
-                        docker run -d --name subtitle-generator -p 3000:3000 ${env.docker_user}/${IMAGE_NAME}:${BUILD_NUMBER}
-                    '''
+                    sh 'docker login -u ${env.docker_user} -p ${env.docker_pass} '
+                    sh 'docker pull ${env.docker_user}/${IMAGE_NAME}:${BUILD_NUMBER}'
+                    sh 'docker run -d --name subtitle-generator -p 3000:3000 ${env.docker_user}/${IMAGE_NAME}:${BUILD_NUMBER} '
                 }
             }
         }
