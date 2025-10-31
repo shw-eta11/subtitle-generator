@@ -48,12 +48,13 @@ pipeline {
         stage('Deploy Locally') {
             steps {
                 echo '🚀 Deploying container on Jenkins EC2...'
-                sh '''
-                    docker stop subtitle-generator || true
-                    docker rm subtitle-generator || true
-                    docker pull ${IMAGE_NAME}:latest
-                    docker run -d --name subtitle-generator -p 3000:3000 ${IMAGE_NAME}:latest
-                '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'docker_user', passwordVariable: 'docker_pass')]) {
+                    sh '''
+                        docker stop subtitle-generator || true
+                        docker rm subtitle-generator || true
+                        docker pull ${IMAGE_NAME}:latest
+                        docker run -d --name subtitle-generator -p 3000:3000 ${IMAGE_NAME}:latest
+                    '''
             }
         }
     }
