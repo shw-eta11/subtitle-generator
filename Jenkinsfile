@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        IMAGE_NAME = "shweta0/subtitle-generator"
+        IMAGE_NAME = "subtitle-generator"
     }
 
     stages {
@@ -37,13 +37,10 @@ pipeline {
 
         stage("Image Push"){
             steps{
-                withCredentials([usernamePassword(credentialsId: 'dockercreds', usernameVariable: 'docker_user', passwordVariable: 'docker_pass')]) {
-                   sh "docker tag static
-                    ${env.docker_user}/static:${BUILD_NUMBER}"
-                   sh "docker login -u ${env.docker_user} -p
-                    ${env.docker_pass}"
-                   sh "docker push 
-                   ${env.docker_user}/static:${BUILD_NUMBER}"  
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'docker_user', passwordVariable: 'docker_pass')]) {
+                   sh "docker tag  ${IMAGE_NAME}:latest ${env.docker_user}/${IMAGE_NAME}:${BUILD_NUMBER}"
+                   sh "docker login -u ${env.docker_user} -p ${env.docker_pass}"
+                   sh "docker push ${env.docker_user}/${IMAGE_NAME}:${BUILD_NUMBER}"  
                 }
             }
         }
