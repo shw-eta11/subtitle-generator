@@ -2,8 +2,10 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        IMAGE_NAME = 'shweta0/subtitle-generator'
+    DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+    IMAGE_NAME = "shweta0/subtitle-generator"
+}
+
     }
 
     stages {
@@ -35,13 +37,13 @@ pipeline {
             }
         }
 
-        stage('Docker Login & Push') {
-            steps {
-                echo '🔐 Logging in and pushing image to Docker Hub...'
-                sh '''
-                    echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                    docker push ${IMAGE_NAME}:latest
-                '''
+        stage("Image Push"){
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'shweta0', passwordVariable: 'Tmro@164289')]) {
+                   sh "docker tag static ${env.docker_user}/static:${BUILD_NUMBER}"
+                   sh "docker login -u ${env.docker_user} -p ${env.docker_pass}"
+                   sh "docker push ${env.docker_user}/static:${BUILD_NUMBER}"  
+                }
             }
         }
 
