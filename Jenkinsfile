@@ -50,8 +50,8 @@ pipeline {
                 echo '🚀 Deploying container on Jenkins EC2...'
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'docker_user', passwordVariable: 'docker_pass')]) {
                     sh "docker login -u ${env.docker_user} -p ${env.docker_pass} "
-                    sh "docker stop subtitle-generator || true
-                        docker rm subtitle-generator || true
+                    sh "docker stop subtitle-generator || true"
+                    sh  "docker rm subtitle-generator || true"
                     sh "docker pull ${env.docker_user}/${IMAGE_NAME}:${BUILD_NUMBER} "
                     sh "docker run -d --name subtitle-generator -p 3000:3000 ${env.docker_user}/${IMAGE_NAME}:${BUILD_NUMBER} "
                 }
