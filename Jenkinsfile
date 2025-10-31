@@ -55,18 +55,18 @@ pipeline {
                         docker pull ${IMAGE_NAME}:latest
                         docker run -d --name subtitle-generator -p 3000:3000 ${IMAGE_NAME}:latest
                     '''
+                }
+            }
+        }
+
+        post {
+            success {
+                echo '✅ Build, Push, and Deploy completed successfully!'
+            }
+            failure {
+                echo '❌ Build or Deploy failed. Check Jenkins logs for details.'
             }
         }
     }
-
-    post {
-        success {
-            echo '✅ Build, Push, and Deploy completed successfully!'
-        }
-        failure {
-            echo '❌ Build or Deploy failed. Check Jenkins logs for details.'
-        }
-    }
- }
 
 }
