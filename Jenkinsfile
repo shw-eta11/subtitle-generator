@@ -58,15 +58,6 @@ pipeline {
                 }
             }
         }
-
-        post {
-            success {
-                echo '✅ Build, Push, and Deploy completed successfully!'
-            }
-            failure {
-                echo '❌ Build or Deploy failed. Check Jenkins logs for details.'
-            }
-        }
     }
 
 }
