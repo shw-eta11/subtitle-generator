@@ -67,4 +67,6 @@ pipeline {
             echo '❌ Build or Deploy failed. Check Jenkins logs for details.'
         }
     }
+ }
+
 }
