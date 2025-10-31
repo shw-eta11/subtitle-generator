@@ -35,14 +35,15 @@ pipeline {
             }
         }
 
-        stage('Push to DockerHub') {
-            steps {
-                echo '📤 Pushing image to Docker Hub...'
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push ${IMAGE_NAME}:latest
-                    '''
+        stage("Image Push"){
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'dockercreds', usernameVariable: 'docker_user', passwordVariable: 'docker_pass')]) {
+                   sh "docker tag static
+                    ${env.docker_user}/static:${BUILD_NUMBER}"
+                   sh "docker login -u ${env.docker_user} -p
+                    ${env.docker_pass}"
+                   sh "docker push 
+                   ${env.docker_user}/static:${BUILD_NUMBER}"  
                 }
             }
         }
